@@ -1,3 +1,14 @@
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+rl.question('Please input something', ans => {
+  console.log(`Ok, you input ${ans}`);
+  console.log('Closing the interface');
+  rl.close();
+});
+
 let students = [];
 class Student {
   constructor(id, name, age, mark) {
@@ -49,11 +60,3 @@ stds = [
 
 std = { name: 'Malfoy', age: 19, mark: 7 };
 std2 = { name: 'kevin', age: 25, mark: 10 };
-
-stds.push(std);
-const idx = stds.findIndex(x => x.name === std.name);
-console.log(idx);
-if (idx > -1) {
-  stds.splice(idx, 1);
-}
-console.log(stds);
