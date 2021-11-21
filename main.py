@@ -51,7 +51,7 @@ def main():
             student_display(students)
 
         # ADD
-        if command == "2":
+        elif command == "2":
             print("[2] Add:")
             name = input("Enter name: ")
             age = input("Enter age: ")
@@ -60,40 +60,53 @@ def main():
             print("ADDED")
 
         # EDIT
-        if command == "3":
+        elif command == "3":
             print("[3] Edit:")
             index = input("Enter index: ")
-            print(f"Result: {students[int(index) - 1]}")
+            if int(index) > len(students):
+                print('Student is not found.')
+            else:
+                print(f"Result: {students[int(index) - 1]}")
 
-            print("Which property need to be updated? ")
-            print("\t(!) 1. Name")
-            print("\t(!) 2. Age")
-            print("\t(!) 3. Mark")
+                print("Which property need to be updated? ")
+                print("\t(!) 1. Name")
+                print("\t(!) 2. Age")
+                print("\t(!) 3. Mark")
 
-            option = input("\t(?) Choice: ")
-            if option == "1":
-                name = input("Please enter name you want to change: ")
-                students[int(index) - 1][0] = name
+                while True:
+                    option = input("\t(?) Choice: ")
+                    if option == "1":
+                        name = input("Please enter name you want to change: ")
+                        students[int(index) - 1][0] = name
+                        break
 
-            if option == "2":
-                age = input("Please enter age you want to change: ")
-                students[int(index) - 1][1] = age
+                    elif option == "2":
+                        age = input("Please enter age you want to change: ")
+                        students[int(index) - 1][1] = age
+                        break
 
-            if option == "3":
-                mark = input("Please enter mark you want to change: ")
-                students[int(index) - 1][2] = mark
+                    elif option == "3":
+                        mark = input("Please enter mark you want to change: ")
+                        students[int(index) - 1][2] = mark
+                        break
 
-            print("EDITED")
+                    else:
+                        print('Invalid input. Please try again.')
+
+                print("EDITED")
 
         # DELETE
-        if command == "4":
+        elif command == "4":
             print("[4] Delete:")
             index = input("Enter index: ")
-            students.pop(int(index) - 1)
-            print("DELETED")
+            if int(index) > len(students):
+                print('Student is not found.')
+            else:
+                students.pop(int(index) - 1)
+                print("DELETED")
 
         # SEARCH
-        if command == "5":
+        elif command == "5":
             print("[5] Search:")
             char = input("Input the characters: ")
             result = []
@@ -104,27 +117,34 @@ def main():
             student_display(result)
 
         # SORT
-        if command == "6":
+        elif command == "6":
             print("[6] Sort:")
             print("\t(!) How to sort?")
             print("\t(!) 1. By Name")
             print("\t(!) 2. By Age")
             print("\t(!) 3. By Mark")
 
-            option = input("\t(?) Choice: ")
-            if option == "1":
-                students = sorted(students, key=lambda x: x[0].lower())
+            while True:
+                option = input("\t(?) Choice: ")
+                if option == "1":
+                    students = sorted(students, key=lambda x: x[0].lower())
+                    break
 
-            if option == "2":
-                students = sorted(students, key=lambda x: int(x[1]))
+                elif option == "2":
+                    students = sorted(students, key=lambda x: int(x[1]))
+                    break
 
-            if option == "3":
-                students = sorted(students, key=lambda x: float(x[2]))
+                elif option == "3":
+                    students = sorted(students, key=lambda x: float(x[2]))
+                    break
+
+                else:
+                    print('Invalid input. Please try again.')
 
             student_display(students)
 
         # STATS
-        if command == "7":
+        elif command == "7":
             print("[7] Statistics:")
             sum_of_mark = 0
             for student in students:
@@ -155,7 +175,7 @@ def main():
             print(f"Sinh vien diem cao nhat ({top_mark}) la:", ", ".join(top_std))
 
         # SAVE
-        if command == "8":
+        elif command == "8":
             print("[8] Save:")
             with open("data.csv", "w", newline="") as file:
                 writer = csv.writer(file)
@@ -164,9 +184,12 @@ def main():
             print("SAVED")
 
         # QUIT
-        if command == "9":
+        elif command == "9":
             print("QUITED")
             break
+
+        else:
+            print('Invalid input. Please try again.')
 
         input("Press Enter to continue...")
 
