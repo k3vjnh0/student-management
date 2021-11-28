@@ -2,45 +2,138 @@ import os
 import csv
 
 
-def menu_display():
+def menu_display(full=True):
     os.system("clear")
     print("Actions list:")
-    print("1 - Print")
-    print("2 - Add")
-    print("3 - Edit")
-    print("4 - Delete")
-    print("5 - Search")
-    print("6 - Sort")
-    print("7 - Stats")
-    print("8 - Save")
-    print("9 - Quit")
+    if not full:
+        print("1 - Add")
+        print("0 - Quit")
+        print("(!) The student list is empty")
+    else:
+        print("1 - Add")
+        print("2 - Print")
+        print("3 - Edit")
+        print("4 - Delete")
+        print("5 - Search")
+        print("6 - Sort")
+        print("7 - Stats")
+        print("8 - Save")
+        print("9 - Validate")
+        print("0 - Quit")
 
 
-def check_error(students):
-    for index, student in enumerate(students):
-        if "" in student or None in student:
-            print(f"There is missing info in the list at row {index+1}.")
-            print(f"{student}")
-        return True
+def fix_error(students):
+    for index, student in enumerate(list(students)):
+        if student.count("") == len(student):
+            students.remove(student)
+            continue
 
-    return False
+        if student[0] == "":
+            students[index][0] = "000000"
+
+        if student[1] == "":
+            students[index][1] = "_"
+
+        if student[2] == "":
+            students[index][2] = "0"
+
+        if student[3] == "":
+            students[index][3] = "-1"
+
+
+def validate_input_number(message, type="int"):
+    while True:
+        try:
+            if type == "int":
+                usr_input = int(input(message))
+            if type == "float":
+                usr_input = float(input(message))
+        except ValueError:
+            print("Not a number! Try again.")
+            continue
+        else:
+            return usr_input
 
 
 def student_display(students):
-    if students == []:
-        print("The list is empty.")
+    if len(students) == 0:
+        print("There are no students.")
         return
 
-    print("\t+--------+--------+--------------------+--------+--------+")
-    print("\t| No.    | ID     | Name               | Age    | Score  |")
-    print("\t+--------+--------+--------------------+--------+--------+")
+    lst_of_id = []
+    lst_of_name = []
+    lst_of_age = []
+    lst_of_score = []
+
+    for student in students:
+        lst_of_id.append(len(student[0]))
+        lst_of_name.append(len(student[1]))
+        lst_of_age.append(len(student[2]))
+        lst_of_score.append(len(student[3]))
+
+    id_len = max(lst_of_id) + 1 if max(lst_of_id) > 7 else 7
+    name_len = max(lst_of_name) + 1 if max(lst_of_name) > 19 else 19
+    age_len = max(lst_of_age) + 1 if max(lst_of_age) > 7 else 7
+    score_len = max(lst_of_score) + 1 if max(lst_of_score) > 7 else 7
+
+    print(
+        "\t+-"
+        + "-" * 7
+        + "+-"
+        + "-" * id_len
+        + "+-"
+        + "-" * name_len
+        + "+-"
+        + "-" * age_len
+        + "+-"
+        + "-" * score_len
+        + "+"
+    )
+    print(
+        "\t| "
+        + "No.".ljust(7)
+        + "| "
+        + "ID".ljust(id_len)
+        + "| "
+        + "Name".ljust(name_len)
+        + "| "
+        + "Age".ljust(age_len)
+        + "| "
+        + "Score".ljust(score_len)
+        + "|"
+    )
+    print(
+        "\t+-"
+        + "-" * (7)
+        + "+-"
+        + "-" * (id_len)
+        + "+-"
+        + "-" * (name_len)
+        + "+-"
+        + "-" * (age_len)
+        + "+-"
+        + "-" * (score_len)
+        + "+"
+    )
 
     for index, student in enumerate(students):
         print(
-            f"\t| {str(index+1).ljust(7)}| {student[0].ljust(7)}| {student[1].ljust(19)}| {student[2].ljust(7)}| {student[3].ljust(7)}|"
+            f"\t| {str(index+1).ljust(7)}| {student[0].ljust(id_len)}| {student[1].ljust(name_len)}| {student[2].ljust(age_len)}| {student[3].ljust(score_len)}|"
         )
 
-    print("\t+--------+--------+--------------------+--------+--------+")
+    print(
+        "\t+-"
+        + "-" * (7)
+        + "+-"
+        + "-" * (id_len)
+        + "+-"
+        + "-" * (name_len)
+        + "+-"
+        + "-" * (age_len)
+        + "+-"
+        + "-" * (score_len)
+        + "+"
+    )
 
 
 def helper_search(students, key=None, value=None):
@@ -63,10 +156,6 @@ def helper_search(students, key=None, value=None):
 
 
 def search_student(students):
-    if students == []:
-        print("The list is empty.")
-        return
-
     result = []
     while True:
         print("Which student?")
@@ -96,7 +185,7 @@ def search_student(students):
             break
 
         else:
-            print("Invalid input. Please try again.")
+            continue
 
     print("Student(s) found:")
     student_display(result)
@@ -108,9 +197,6 @@ def main():
     students = []
     if not os.path.exists("data.csv"):
         open("data.csv", "w").close()
-    elif os.path.getsize("data.csv") == 0:
-        print("The file is empty.")
-        file_empty = True
     else:
         with open("data.csv", "r") as data:
             lines = data.read().strip().split("\n")
@@ -118,27 +204,36 @@ def main():
                 students.append(line.split(","))
 
     while True:
-        menu_display()
+        fix_error(students)
+
+        menu_display(full=False) if len(students) == 0 else menu_display()
+
         command = input("Enter command: ")
 
-        # match - case
-        # (1)-PRINT--------------------------------------------------
-        if command == "1":
-            print("[1] Print:")
-            student_display(students)
+        if command in ("2", "3", "4", "5", "6", "7", "8", "9") and len(students) == 0:
+            continue
 
-        # (2)-ADD----------------------------------------------------
-        elif command == "2":
-            print("[2] Add:")
-            if file_empty:
+        # match - case
+        # (1)-ADD----------------------------------------------------
+        elif command == "1":
+            print("[1] Add:")
+            if len(students) == 0:
                 id = "000001"
             else:
-                id = f"{int(students[-1][0])+1:06d}"
+                lst_of_id = []
+                for student in students:
+                    lst_of_id.append(int(student[0]))
+                id = f"{max(lst_of_id)+1:06d}"
             name = input("Enter name: ")
-            age = input("Enter age: ")
-            score = input("Enter score: ")
-            students.append([id, name, age, score])
+            age = validate_input_number("Enter age: ", type="int")
+            score = validate_input_number("Enter score: ", type="float")
+            students.append([id, name, str(age), str(score)])
             print("ADDED")
+
+        # (2)-PRINT--------------------------------------------------
+        elif command == "2":
+            print("[2] Print:")
+            student_display(students)
 
         # (3)-EDIT---------------------------------------------------
         elif command == "3":
@@ -165,25 +260,26 @@ def main():
                     break
 
                 elif option == "2":
-                    age = input("Please enter age you want to change: ")
+                    age = validate_input_number(
+                        "Please enter age you want to change: ", type="int"
+                    )
                     students[index][2] = age
                     break
 
                 elif option == "3":
-                    score = input("Please enter score you want to change: ")
+                    score = validate_input_number(
+                        "Please enter score you want to change: ", type="float"
+                    )
                     students[index][3] = score
                     break
 
                 else:
-                    print("Invalid input. Please try again.")
+                    continue
 
             print("EDITED")
 
         # (4)-DELETE-------------------------------------------------
         elif command == "4":
-            if check_error(students):
-                break
-
             print("[4] Delete:")
             result = []
             while len(result) != 1:
@@ -203,7 +299,7 @@ def main():
                 elif confirm == "n":
                     break
                 else:
-                    "Invalid input. Please try again."
+                    continue
 
         # (5)-SEARCH-------------------------------------------------
         elif command == "5":
@@ -212,9 +308,6 @@ def main():
 
         # (6)-SORT---------------------------------------------------
         elif command == "6":
-            if check_error(students):
-                break
-
             print("[6] Sort:")
             while True:
                 print("How to sort?")
@@ -235,104 +328,132 @@ def main():
                             students.sort(key=lambda x: x[0], reverse=True)
                             break
                         else:
-                            print("Invalid input. Please try again.")
+                            continue
                     break
 
                 elif option == "2":
-                    while True:
-                        print("\t(!) 1. Ascending")
-                        print("\t(!) 2. Descending")
-                        select = input("\t(?) Select: ")
-                        if select == "1":
-                            students.sort(
-                                key=lambda x: (x[1].lower(), int(x[2]), float(x[3]))
-                            )
-                            break
-                        elif select == "2":
-                            students.sort(
-                                key=lambda x: (x[1].lower(), int(x[2]), float(x[3])),
-                                reverse=True,
-                            )
-                            break
-                        else:
-                            print("Invalid input. Please try again.")
-                    break
+                    try:
+                        while True:
+                            print("\t(!) 1. Ascending")
+                            print("\t(!) 2. Descending")
+                            select = input("\t(?) Select: ")
+                            if select == "1":
+                                students.sort(
+                                    key=lambda x: (x[1].lower(), int(x[2]), float(x[3]))
+                                )
+                                break
+                            elif select == "2":
+                                students.sort(
+                                    key=lambda x: (
+                                        x[1].lower(),
+                                        int(x[2]),
+                                        float(x[3]),
+                                    ),
+                                    reverse=True,
+                                )
+                                break
+                            else:
+                                continue
+                        break
+                    except ValueError:
+                        print("There is an error in student list.")
 
                 elif option == "3":
-                    while True:
-                        print("\t(!) 1. Ascending")
-                        print("\t(!) 2. Descending")
-                        select = input("\t(?) Select: ")
-                        if select == "1":
-                            students.sort(
-                                key=lambda x: (int(x[2]), x[1].lower(), float(x[3]))
-                            )
-                            break
-                        elif select == "2":
-                            students.sort(
-                                key=lambda x: (int(x[2]), x[1].lower(), float(x[3])),
-                                reverse=True,
-                            )
-                            break
-                        else:
-                            print("Invalid input. Please try again.")
-                    break
+                    try:
+                        while True:
+                            print("\t(!) 1. Ascending")
+                            print("\t(!) 2. Descending")
+                            select = input("\t(?) Select: ")
+                            if select == "1":
+                                students.sort(
+                                    key=lambda x: (int(x[2]), x[1].lower(), float(x[3]))
+                                )
+                                break
+                            elif select == "2":
+                                students.sort(
+                                    key=lambda x: (
+                                        int(x[2]),
+                                        x[1].lower(),
+                                        float(x[3]),
+                                    ),
+                                    reverse=True,
+                                )
+                                break
+                            else:
+                                continue
+                        break
+                    except ValueError:
+                        print("There is an error in student list.")
 
                 elif option == "4":
-                    while True:
-                        print("\t(!) 1. Ascending")
-                        print("\t(!) 2. Descending")
-                        select = input("\t(?) Select: ")
-                        if select == "1":
-                            students.sort(
-                                key=lambda x: (float(x[3]), x[1].lower(), int(x[2]))
-                            )
-                            break
-                        elif select == "2":
-                            students.sort(
-                                key=lambda x: (float(x[3]), x[1].lower(), int(x[2])),
-                                reverse=True,
-                            )
-                            break
-                        else:
-                            print("Invalid input. Please try again.")
-                    break
+                    try:
+                        while True:
+                            print("\t(!) 1. Ascending")
+                            print("\t(!) 2. Descending")
+                            select = input("\t(?) Select: ")
+                            if select == "1":
+                                students.sort(
+                                    key=lambda x: (float(x[3]), x[1].lower(), int(x[2]))
+                                )
+                                break
+                            elif select == "2":
+                                students.sort(
+                                    key=lambda x: (
+                                        float(x[3]),
+                                        x[1].lower(),
+                                        int(x[2]),
+                                    ),
+                                    reverse=True,
+                                )
+                                break
+                            else:
+                                continue
+                        break
+                    except ValueError:
+                        print("There is an error in student list.")
 
                 else:
-                    print("Invalid input. Please try again.")
+                    continue
 
             student_display(students)
 
         # (7)-STATS--------------------------------------------------
         elif command == "7":
-            if check_error(students):
-                break
-
             print("[7] Statistics:")
             sum_of_score = 0
             excel = []
             good = []
             bad = []
 
-            for student in students:
-                sum_of_score += float(student[3])
-                if float(student[3]) >= 8:
-                    excel.append(student)
-                elif float(student[3]) >= 7 and float(student[3]) < 8:
-                    good.append(student)
-                else:
-                    bad.append(student)
+            try:
+                for student in students:
+                    sum_of_score += float(student[3])
+                    if float(student[3]) >= 8:
+                        excel.append(student)
+                    elif float(student[3]) >= 7 and float(student[3]) < 8:
+                        good.append(student)
+                    else:
+                        bad.append(student)
 
-            top_score = max([float(x[3]) for x in excel])
-            top_std = [x[1] for x in excel if float(x[3]) == top_score]
+                top_score = max([float(x[3]) for x in excel])
+                top_std = [x[1] for x in excel if float(x[3]) == top_score]
 
-            print(f"Diem trung binh ca lop: {round(sum_of_score/len(students),2)}")
-            print(
-                f"Ti le sinh vien gioi: {round(float(len(excel)/len(students)),2):.0%}"
-            )
-            print(f"Ti le sinh vien kha: {round(float(len(good)/len(students)),2):.0%}")
-            print(f"Ti le sinh vien kem: {round(float(len(bad)/len(students)),2):.0%}")
-            print(f"Sinh vien diem cao nhat ({top_score}) la: " + ", ".join(top_std))
+                print(f"Diem trung binh ca lop: {round(sum_of_score/len(students),2)}")
+                print(
+                    f"Ti le sinh vien gioi: {round(float(len(excel)/len(students)),2):.0%}"
+                )
+                print(
+                    f"Ti le sinh vien kha: {round(float(len(good)/len(students)),2):.0%}"
+                )
+                print(
+                    f"Ti le sinh vien kem: {round(float(len(bad)/len(students)),2):.0%}"
+                )
+                print(
+                    f"Sinh vien diem cao nhat ({top_score}) la: " + ", ".join(top_std)
+                )
+
+            except ValueError:
+                print(f"There is an error at {student}.")
 
         # (8)-SAVE---------------------------------------------------
         elif command == "8":
@@ -343,13 +464,40 @@ def main():
 
             print("SAVED")
 
-        # (9)-QUIT---------------------------------------------------
+        # (9)-VALIDATE-----------------------------------------------
         elif command == "9":
+            result = []
+            for index, student in enumerate(list(students)):
+                try:
+                    int(student[0])
+                except ValueError:
+                    result.append(student)
+                    continue
+
+                try:
+                    int(student[2])
+                except ValueError:
+                    if student not in result:
+                        result.append(student)
+                    continue
+
+                try:
+                    float(student[3])
+                except ValueError:
+                    if student not in result:
+                        result.append(student)
+                    continue
+
+            print("/!\\ ERRORS:")
+            student_display(result)
+
+        # (0)-QUIT---------------------------------------------------
+        elif command == "0":
             print("QUITED")
             break
 
         else:
-            print("Invalid input. Please try again.")
+            continue
 
         input("Press Enter to continue...")
 
