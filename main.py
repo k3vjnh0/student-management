@@ -159,38 +159,42 @@ def helper_search(students, key=None, value=None):
 
 def search_student(students):
     result = []
-    while True:
-        print("Which student?")
-        print("\t(!) 1. Search By ID")
-        print("\t(!) 2. Search By Name")
-        print("\t(!) 3. Search By Age")
-        print("\t(!) 4. Search By Score")
-        option = input("\t(?) Option: ")
-        if option == "1":
-            std_id = input("Input the student ID: ")
-            result = helper_search(students, key="id", value=std_id)
-            break
+    try:
+        while True:
+            print("Which student?")
+            print("\t(!) 1. Search By ID")
+            print("\t(!) 2. Search By Name")
+            print("\t(!) 3. Search By Age")
+            print("\t(!) 4. Search By Score")
+            print("\t(!) 0. Back to main menu")
+            option = input("\t(?) Option: ")
+            if option == "1":
+                std_id = input("Input the student ID: ")
+                result = helper_search(students, key="id", value=std_id)
+                break
 
-        if option == "2":
-            str_of_name = input("Input the characters: ")
-            result = helper_search(students, key="name", value=str_of_name)
-            break
+            if option == "2":
+                str_of_name = input("Input the characters: ")
+                result = helper_search(students, key="name", value=str_of_name)
+                break
 
-        elif option == "3":
-            num_of_age = int(input("Input the age: "))
-            result = helper_search(students, key="age", value=num_of_age)
-            break
+            elif option == "3":
+                num_of_age = int(input("Input the age: "))
+                result = helper_search(students, key="age", value=num_of_age)
+                break
 
-        elif option == "4":
-            num_of_score = float(input("Input the score: "))
-            result = helper_search(students, key="score", value=num_of_score)
-            break
+            elif option == "4":
+                num_of_score = float(input("Input the score: "))
+                result = helper_search(students, key="score", value=num_of_score)
+                break
 
-        else:
-            continue
+            elif option == "0":
+                break
 
-    print("Student(s) found:")
-    student_display(result)
+            else:
+                continue
+    except ValueError:
+        print("There is an error in student list.")
 
     return result
 
@@ -240,19 +244,20 @@ def main():
             print("[3] Edit:")
             result = []
             while len(result) != 1:
-                if len(result) == 0:
-                    result = search_student(students)
-                if len(result) > 1:
-                    print("There are many students in the list.")
-                    result = search_student(result)
+                result = search_student(students)
+                student_display(result)
+                if len(result) != 1:
+                    ask = input("Press 0 to main menu...")
+                    if ask == "0":
+                        break
 
-            index = students.index(result[0])
-
-            while True:
+            while len(result) == 1:
+                index = students.index(result[0])
                 print("Which property need to be updated?")
                 print("\t(!) 1. Name")
                 print("\t(!) 2. Age")
                 print("\t(!) 3. Score")
+                print("\t(!) 0. Back to main menu")
                 option = input("\t(?) Option: ")
                 if option == "1":
                     name = input("Please enter name you want to change: ")
@@ -273,30 +278,48 @@ def main():
                     students[index][3] = str(score)
                     break
 
+                elif option == "0":
+                    break
+
                 else:
                     continue
 
-            print("EDITED")
+            if len(result) == 1:
+                print("EDITED")
 
         # (4)-DELETE-------------------------------------------------
         elif command == "4":
             print("[4] Delete:")
             result = []
-            while len(result) != 1:
-                if len(result) == 0:
-                    result = search_student(students)
-                if len(result) > 1:
-                    print("There are many students in the list.")
-                    result = search_student(result)
+            if len(errors) != 0:
+                while True:
+                    print("There is an error in student list.")
+                    ask = input(
+                        "Do you want to remove all errors in student list (y/n)? "
+                    )
+                    if ask == "y":
+                        result = list(errors)
+                        student_display(errors)
+                        break
+                    elif ask == "n":
+                        print("Keep searching")
+                        result = search_student(students)
+                        break
+                    else:
+                        continue
+            else:
+                result = search_student(students)
 
+            print("Student(s) found:")
+            student_display(result)
             while True:
-                confirm = input("Are you sure to delete this student (y/n)? ")
+                confirm = input("Are you sure to delete (y/n)? ")
                 if confirm == "y":
-                    index = students.index(result[0])
-                    students.pop(int(index))
+                    for std in result:
+                        students.pop(int(students.index(std)))
                     print("DELETED")
                     break
-                elif confirm == "n":
+                if confirm == "n":
                     break
                 else:
                     continue
@@ -304,7 +327,10 @@ def main():
         # (5)-SEARCH-------------------------------------------------
         elif command == "5":
             print("[5] Search:")
-            search_student(students)
+            result = search_student(students)
+            if len(result) != 0:
+                print("Student(s) found:")
+                student_display(result)
 
         # (6)-SORT---------------------------------------------------
         elif command == "6":
@@ -316,6 +342,7 @@ def main():
                     print("\t(!) 2. By Name")
                     print("\t(!) 3. By Age")
                     print("\t(!) 4. By Score")
+                    print("\t(!) 0. Back to main menu")
                     option = input("\t(?) Option: ")
                     if option == "1":
                         while True:
@@ -414,6 +441,9 @@ def main():
                                 break
                             else:
                                 continue
+                        break
+
+                    elif option == "0":
                         break
 
                     else:
