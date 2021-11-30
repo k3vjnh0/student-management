@@ -22,11 +22,14 @@ def menu_display(full=True):
         print("0 - Quit")
 
 
-def fix_error(students):
+def fix_missing(students):
     for index, student in enumerate(list(students)):
         if student.count("") == len(student):
             students.remove(student)
             continue
+
+        while len(student) != 4:
+            student.append("")
 
         if student[0] == "":
             students[index][0] = "000000"
@@ -41,7 +44,41 @@ def fix_error(students):
             students[index][3] = "-1"
 
 
-def validate_input(message, type="int"):
+def validate_error(students):
+    errors = []
+    for student in students:
+        try:
+            int(student[0])
+        except ValueError:
+            if student not in errors:
+                errors.append(student)
+
+        try:
+            int(student[2])
+        except ValueError:
+            if student not in errors:
+                errors.append(student)
+
+        try:
+            float(student[3])
+        except ValueError:
+            if student not in errors:
+                errors.append(student)
+
+        err = (
+            student[0] == "000000"
+            or student[1] == "_"
+            or student[2] == "0"
+            or student[3] == "-1"
+        )
+
+        if err and student not in errors:
+            errors.append(student)
+
+    return errors
+
+
+def validate_input(message, type=None):
     usr_input = None
     while True:
         try:
@@ -138,63 +175,37 @@ def student_display(students):
     )
 
 
-def helper_search(students, key=None, value=None):
-    result = []
-    for student in students:
-        if key == "id":
-            if value == student[0]:
-                result.append(student)
-        if key == "name":
-            if value.lower() in student[1].lower():
-                result.append(student)
-        if key == "age":
-            if value == int(student[2]):
-                result.append(student)
-        if key == "score":
-            if value == float(student[3]):
-                result.append(student)
-
-    return result
-
-
 def search_student(students):
     result = []
-    try:
-        while True:
-            print("Which student?")
-            print("\t(!) 1. Search By ID")
-            print("\t(!) 2. Search By Name")
-            print("\t(!) 3. Search By Age")
-            print("\t(!) 4. Search By Score")
-            print("\t(!) 0. Back to main menu")
-            option = input("\t(?) Option: ")
-            if option == "1":
-                std_id = input("Input the student ID: ")
-                result = helper_search(students, key="id", value=std_id)
-                break
+    while True:
+        print("Which student?")
+        print("\t(!) 1. Search By ID")
+        print("\t(!) 2. Search By Name")
+        print("\t(!) 3. Search By Age")
+        print("\t(!) 4. Search By Score")
+        option = input("\t(?) Option: ")
+        if option == "1":
+            std_id = input("Input the student ID: ")
+            result = [std for std in students if std_id.lower() == std[0]]
+            break
 
-            if option == "2":
-                str_of_name = input("Input the characters: ")
-                result = helper_search(students, key="name", value=str_of_name)
-                break
+        if option == "2":
+            str_of_name = input("Input the characters: ")
+            result = [std for std in students if str_of_name.lower() in std[1]]
+            break
 
-            elif option == "3":
-                num_of_age = int(input("Input the age: "))
-                result = helper_search(students, key="age", value=num_of_age)
-                break
+        elif option == "3":
+            num_of_age = input("Input the age: ")
+            result = [std for std in students if num_of_age.lower() == std[2]]
+            break
 
-            elif option == "4":
-                num_of_score = float(input("Input the score: "))
-                result = helper_search(students, key="score", value=num_of_score)
-                break
+        elif option == "4":
+            num_of_score = input("Input the score: ")
+            result = [std for std in students if num_of_score.lower() == std[3]]
+            break
 
-            elif option == "0":
-                break
-
-            else:
-                continue
-    except ValueError:
-        print("There is an error in student list.")
+        else:
+            continue
 
     return result
 
@@ -210,7 +221,8 @@ def main():
             students = [line.split(",") for line in lines]
 
     while True:
-        fix_error(students)
+        fix_missing(students)
+        errors = validate_error(students)
 
         menu_display(full=False) if len(students) == 0 else menu_display()
 
@@ -262,6 +274,7 @@ def main():
                 if option == "1":
                     name = input("Please enter name you want to change: ")
                     students[index][1] = name
+                    print("Name editted")
                     break
 
                 elif option == "2":
@@ -269,6 +282,7 @@ def main():
                         "Please enter age you want to change: ", type="int"
                     )
                     students[index][2] = str(age)
+                    print("Age editted")
                     break
 
                 elif option == "3":
@@ -276,6 +290,7 @@ def main():
                         "Please enter score you want to change: ", type="float"
                     )
                     students[index][3] = str(score)
+                    print("Score editted")
                     break
 
                 elif option == "0":
@@ -284,22 +299,18 @@ def main():
                 else:
                     continue
 
-            if len(result) == 1:
-                print("EDITED")
-
         # (4)-DELETE-------------------------------------------------
         elif command == "4":
             print("[4] Delete:")
             result = []
-            if len(errors) != 0:
-                while True:
+            while True:
+                if len(errors) != 0:
                     print("There is an error in student list.")
                     ask = input(
                         "Do you want to remove all errors in student list (y/n)? "
                     )
                     if ask == "y":
                         result = list(errors)
-                        student_display(errors)
                         break
                     elif ask == "n":
                         print("Keep searching")
@@ -307,8 +318,9 @@ def main():
                         break
                     else:
                         continue
-            else:
-                result = search_student(students)
+                else:
+                    result = search_student(students)
+                    break
 
             print("Student(s) found:")
             student_display(result)
@@ -317,6 +329,7 @@ def main():
                 if confirm == "y":
                     for std in result:
                         students.pop(int(students.index(std)))
+                    errors = []
                     print("DELETED")
                     break
                 if confirm == "n":
@@ -342,7 +355,6 @@ def main():
                     print("\t(!) 2. By Name")
                     print("\t(!) 3. By Age")
                     print("\t(!) 4. By Score")
-                    print("\t(!) 0. Back to main menu")
                     option = input("\t(?) Option: ")
                     if option == "1":
                         while True:
@@ -443,9 +455,6 @@ def main():
                                 continue
                         break
 
-                    elif option == "0":
-                        break
-
                     else:
                         continue
 
@@ -502,37 +511,12 @@ def main():
 
         # (9)-VALIDATE-----------------------------------------------
         elif command == "9":
-            for index, student in enumerate(list(students)):
-                try:
-                    int(student[0])
-                except ValueError:
-                    if student not in errors:
-                        errors.append(student)
-
-                try:
-                    int(student[2])
-                except ValueError:
-                    if student not in errors:
-                        errors.append(student)
-
-                try:
-                    float(student[3])
-                except ValueError:
-                    if student not in errors:
-                        errors.append(student)
-
-                err = (
-                    student[0] == "000000"
-                    or student[1] == "_"
-                    or student[2] == "0"
-                    or student[3] == "-1"
-                )
-
-                if err and student not in errors:
-                    errors.append(student)
-
-            print("/!\\ ERRORS:")
-            student_display(errors)
+            print("[9] Validate:")
+            if len(errors) != 0:
+                print("/!\\ ERRORS:")
+                student_display(errors)
+            else:
+                print("Congrats! There are no errors!")
 
         # (0)-QUIT---------------------------------------------------
         elif command == "0":
