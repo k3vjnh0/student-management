@@ -2,32 +2,6 @@ import os
 import csv
 
 
-class Student:
-    def __init__(self, name, age, score):
-        self.id = None
-        self.name = name
-        self.age = age
-        self.score = score
-
-    def get_name(self):
-        return self.name
-
-    def set_name(self, name):
-        self.name = name
-
-    def get_age(self):
-        return self.age
-
-    def set_age(self, age):
-        self.age = age
-
-    def get_score(self):
-        return self.score
-
-    def set_score(self, score):
-        self.score = score
-
-
 def menu_display(full=True):
     os.system("clear")
     print("Actions list:")
@@ -49,57 +23,42 @@ def menu_display(full=True):
 
 
 def fix_missing(students):
-    for index, student in enumerate(list(students)):
-        if student.count("") == len(student):
-            students.remove(student)
+    for index, std in enumerate(list(students)):
+        if std.count("") == len(std):
+            students.remove(std)
             continue
 
-        while len(student) != 4:
-            student.append("")
+        while len(std) != 4:
+            std.append("")
 
-        if student[0] == "":
+        if std[0] == "":
             students[index][0] = "000000"
 
-        if student[1] == "":
+        if std[1] == "":
             students[index][1] = "_"
 
-        if student[2] == "":
+        if std[2] == "":
             students[index][2] = "0"
 
-        if student[3] == "":
+        if std[3] == "":
             students[index][3] = "-1"
 
 
 def find_error(students):
     errors = []
-    for student in students:
+    for std in students:
         try:
-            int(student[0])
+            int(std[0])
+            int(std[2])
+            float(std[3])
         except ValueError:
-            if student not in errors:
-                errors.append(student)
+            if std not in errors:
+                errors.append(std)
 
-        try:
-            int(student[2])
-        except ValueError:
-            if student not in errors:
-                errors.append(student)
+        err = std[0] == "000000" or std[1] == "_" or std[2] == "0" or std[3] == "-1"
 
-        try:
-            float(student[3])
-        except ValueError:
-            if student not in errors:
-                errors.append(student)
-
-        err = (
-            student[0] == "000000"
-            or student[1] == "_"
-            or student[2] == "0"
-            or student[3] == "-1"
-        )
-
-        if err and student not in errors:
-            errors.append(student)
+        if err and std not in errors:
+            errors.append(std)
 
     return errors
 
@@ -129,11 +88,11 @@ def student_display(students):
     len_of_age = []
     len_of_score = []
 
-    for student in students:
-        len_of_id.append(len(student[0]))
-        len_of_name.append(len(student[1]))
-        len_of_age.append(len(student[2]))
-        len_of_score.append(len(student[3]))
+    for std in students:
+        len_of_id.append(len(std[0]))
+        len_of_name.append(len(std[1]))
+        len_of_age.append(len(std[2]))
+        len_of_score.append(len(std[3]))
 
     no_len = len(str(len(students))) + 1 if len(str(len(students))) > 4 else 4
     id_len = max(len_of_id) + 1 if max(len_of_id) > 7 else 7
@@ -181,9 +140,13 @@ def student_display(students):
         + "+"
     )
 
-    for index, student in enumerate(students):
+    for index, std in enumerate(students):
         print(
-            f"\t| {str(index+1).ljust(no_len)}| {student[0].ljust(id_len)}| {student[1].ljust(name_len)}| {student[2].ljust(age_len)}| {student[3].ljust(score_len)}|"
+            f"\t| {str(index+1).ljust(no_len)}"
+            + f"| {std[0].ljust(id_len)}"
+            + f"| {std[1].ljust(name_len)}"
+            + f"| {std[2].ljust(age_len)}"
+            + f"| {std[3].ljust(score_len)}|"
         )
 
     print(
@@ -209,25 +172,25 @@ def search_student(students):
         print("\t(!) 2. Search By Name")
         print("\t(!) 3. Search By Age")
         print("\t(!) 4. Search By Score")
-        option = input("\t(?) Option: ")
+        option = input("(?) Option: ")
         if option == "1":
             std_id = input("Input the student ID: ")
-            result = [std for std in students if std_id.lower() == std[0].lower()]
+            result = [x for x in students if std_id.lower() in x[0].lower()]
             break
 
         if option == "2":
-            str_of_name = input("Input the characters: ")
-            result = [std for std in students if str_of_name.lower() in std[1].lower()]
+            name = input("Input the characters: ")
+            result = [x for x in students if name.lower() in x[1].lower()]
             break
 
         elif option == "3":
-            num_of_age = input("Input the age: ")
-            result = [std for std in students if num_of_age.lower() == std[2].lower()]
+            age = input("Input the age: ")
+            result = [x for x in students if age.lower() in x[2].lower()]
             break
 
         elif option == "4":
-            num_of_score = input("Input the score: ")
-            result = [std for std in students if num_of_score.lower() == std[3].lower()]
+            score = input("Input the score: ")
+            result = [x for x in students if score.lower() in x[3].lower()]
             break
 
         else:
@@ -238,7 +201,6 @@ def search_student(students):
 
 def main():
     students = []
-    errors = []
     if not os.path.exists("data.csv"):
         open("data.csv", "w").close()
     else:
@@ -254,26 +216,29 @@ def main():
 
         command = input("Enter command: ")
 
-        if command in ("2", "3", "4", "5", "6", "7", "8", "9") and len(students) == 0:
+        if len(students) == 0 and command not in ("0", "1"):
             continue
 
         # match - case
         # (1)-ADD----------------------------------------------------
         elif command == "1":
             print("[1] Add:")
+            std_id = None
             if len(students) == 0:
                 std_id = "000001"
             else:
                 try:
-                    lst_of_id = [int(student[0]) for student in students]
-                    std_id = f"{max(lst_of_id)+1:06d}"
-                    name = input("Enter name: ")
-                    age = validate_input("Enter age: ", type="int")
-                    score = validate_input("Enter score: ", type="float")
-                    students.append([std_id, name, str(age), str(score)])
-                    print("ADDED")
+                    ids = [int(std[0]) for std in students]
+                    std_id = f"{max(ids)+1:06d}"
                 except ValueError:
-                    print("There is an error in the student list")
+                    print("There are errors in the student list.")
+
+            if std_id:
+                name = input("Enter name: ")
+                age = validate_input("Enter age: ", type="int")
+                score = validate_input("Enter score: ", type="float")
+                students.append([std_id, name, str(age), str(score)])
+                print("ADDED")
 
         # (2)-PRINT--------------------------------------------------
         elif command == "2":
@@ -284,13 +249,20 @@ def main():
         elif command == "3":
             print("[3] Edit:")
             result = []
-            while len(result) != 1:
+            keep_searching = True
+            while len(result) != 1 and keep_searching:
                 result = search_student(students)
                 student_display(result)
                 if len(result) != 1:
-                    ask = input("Press 0 to main menu...")
-                    if ask == "0":
-                        break
+                    while True:
+                        confirm = input("Keep searching (y/n)? ")
+                        if confirm.lower() == "y":
+                            break
+                        elif confirm.lower() == "n":
+                            keep_searching = False
+                            break
+                        else:
+                            continue
 
             while len(result) == 1:
                 index = students.index(result[0])
@@ -299,11 +271,11 @@ def main():
                 print("\t(!) 2. Age")
                 print("\t(!) 3. Score")
                 print("\t(!) 0. Back to main menu")
-                option = input("\t(?) Option: ")
+                option = input("(?) Option: ")
                 if option == "1":
                     name = input("Please enter name you want to change: ")
                     students[index][1] = name
-                    print("Name editted")
+                    print("Name updated.")
                     break
 
                 elif option == "2":
@@ -311,7 +283,7 @@ def main():
                         "Please enter age you want to change: ", type="int"
                     )
                     students[index][2] = str(age)
-                    print("Age editted")
+                    print("Age updated.")
                     break
 
                 elif option == "3":
@@ -319,7 +291,7 @@ def main():
                         "Please enter score you want to change: ", type="float"
                     )
                     students[index][3] = str(score)
-                    print("Score editted")
+                    print("Score updated.")
                     break
 
                 elif option == "0":
@@ -332,39 +304,39 @@ def main():
         elif command == "4":
             print("[4] Delete:")
             result = []
-            while True:
-                if len(errors) != 0:
-                    print("There is an error in the student list.")
-                    ask = input(
-                        "Do you want to remove all errors in student list (y/n)? "
-                    )
-                    if ask == "y":
+            if len(errors) != 0:
+                print("There are errors in the student list.")
+                while True:
+                    confirm = input("Do you want to remove all errors (y/n)? ")
+                    if confirm.lower() == "y":
                         result = list(errors)
                         break
-                    elif ask == "n":
-                        print("Keep searching")
+                    elif confirm.lower() == "n":
+                        print("Search for deleting...")
                         result = search_student(students)
                         break
                     else:
                         continue
-                else:
-                    result = search_student(students)
-                    break
+            else:
+                result = search_student(students)
 
-            print("Student(s) found:")
-            student_display(result)
-            while True:
-                confirm = input("Are you sure to delete (y/n)? ")
-                if confirm == "y":
-                    for std in result:
-                        students.pop(int(students.index(std)))
-                    errors = []
-                    print("DELETED")
-                    break
-                if confirm == "n":
-                    break
-                else:
-                    continue
+            if len(result) != 0:
+                print("Student(s) found:")
+                student_display(result)
+                while True:
+                    confirm = input("Are you sure to delete (y/n)? ")
+                    if confirm.lower() == "y":
+                        for std in result:
+                            students.pop(int(students.index(std)))
+                        errors = []
+                        print("DELETED")
+                        break
+                    if confirm.lower() == "n":
+                        break
+                    else:
+                        continue
+            else:
+                print("Not found.")
 
         # (5)-SEARCH-------------------------------------------------
         elif command == "5":
@@ -379,24 +351,24 @@ def main():
         # (6)-SORT---------------------------------------------------
         elif command == "6":
             print("[6] Sort:")
-            try:
-                while True:
-                    print("How to sort?")
-                    print("\t(!) 1. By ID")
-                    print("\t(!) 2. By Name")
-                    print("\t(!) 3. By Age")
-                    print("\t(!) 4. By Score")
-                    option = input("\t(?) Option: ")
+            while True:
+                print("How to sort?")
+                print("\t(!) 1. By ID")
+                print("\t(!) 2. By Name")
+                print("\t(!) 3. By Age")
+                print("\t(!) 4. By Score")
+                try:
+                    option = input("(?) Option: ")
                     if option == "1":
                         while True:
                             print("\t(!) 1. Ascending")
                             print("\t(!) 2. Descending")
-                            select = input("\t(?) Select: ")
+                            select = input("(?) Select: ")
                             if select == "1":
                                 students.sort(key=lambda x: int(x[0]))
                                 break
                             elif select == "2":
-                                students.sort(key=lambda x: int(x[0]), reverse=True)
+                                students.sort(key=lambda x: -int(x[0]))
                                 break
                             else:
                                 continue
@@ -406,7 +378,7 @@ def main():
                         while True:
                             print("\t(!) 1. Ascending")
                             print("\t(!) 2. Descending")
-                            select = input("\t(?) Select: ")
+                            select = input("(?) Select: ")
                             if select == "1":
                                 students.sort(
                                     key=lambda x: (
@@ -434,7 +406,7 @@ def main():
                         while True:
                             print("\t(!) 1. Ascending")
                             print("\t(!) 2. Descending")
-                            select = input("\t(?) Select: ")
+                            select = input("(?) Select: ")
                             if select == "1":
                                 students.sort(
                                     key=lambda x: (
@@ -462,7 +434,7 @@ def main():
                         while True:
                             print("\t(!) 1. Ascending")
                             print("\t(!) 2. Descending")
-                            select = input("\t(?) Select: ")
+                            select = input("(?) Select: ")
                             if select == "1":
                                 students.sort(
                                     key=lambda x: (
@@ -489,9 +461,10 @@ def main():
                     else:
                         continue
 
-                student_display(students)
-            except ValueError:
-                print("There is an error in the student list.")
+                except ValueError:
+                    print("There are errors in the student list.")
+
+            student_display(students)
 
         # (7)-STATS--------------------------------------------------
         elif command == "7":
@@ -502,34 +475,26 @@ def main():
             bad = []
 
             try:
-                for student in students:
-                    sum_of_score += float(student[3])
-                    if float(student[3]) >= 8:
-                        excel.append(student)
-                    elif float(student[3]) >= 7 and float(student[3]) < 8:
-                        good.append(student)
+                for std in students:
+                    sum_of_score += float(std[3])
+                    if float(std[3]) >= 8:
+                        excel.append(std)
+                    elif float(std[3]) >= 7 and float(std[3]) < 8:
+                        good.append(std)
                     else:
-                        bad.append(student)
+                        bad.append(std)
 
                 top_score = max([float(x[3]) for x in excel])
                 top_std = [x[1] for x in excel if float(x[3]) == top_score]
 
-                print(f"Diem trung binh ca lop: {round(sum_of_score/len(students),2)}")
-                print(
-                    f"Ti le sinh vien gioi: {round(float(len(excel)/len(students)),2):.0%}"
-                )
-                print(
-                    f"Ti le sinh vien kha: {round(float(len(good)/len(students)),2):.0%}"
-                )
-                print(
-                    f"Ti le sinh vien kem: {round(float(len(bad)/len(students)),2):.0%}"
-                )
-                print(
-                    f"Sinh vien diem cao nhat ({top_score}) la: " + ", ".join(top_std)
-                )
+                print(f"Average score: {round(sum_of_score/len(students),2)}")
+                print(f"Excelent: {round(len(excel)/len(students),2):.0%}")
+                print(f"Good: {round(len(good)/len(students),2):.0%}")
+                print(f"Bad: {round(len(bad)/len(students),2):.0%}")
+                print(f"Top score ({top_score}): " + ", ".join(top_std))
 
             except ValueError:
-                print("There is an error in the student list.")
+                print("There are errors in the student list.")
 
         # (8)-SAVE---------------------------------------------------
         elif command == "8":
@@ -547,7 +512,7 @@ def main():
                 print("/!\\ ERRORS:")
                 student_display(errors)
             else:
-                print("Congrats! There are no errors!")
+                print("Congratulations! There are no errors!")
 
         # (0)-QUIT---------------------------------------------------
         elif command == "0":
