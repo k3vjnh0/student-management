@@ -180,8 +180,16 @@ def student_display(students):
     )
 
 
-def check_duplicate_student(students):
-    pass
+def check_identical_student(students):
+    if len(students) <= 0:
+        return False
+
+    for ele in list(zip(*students)):
+        res = all(e == ele[0] for e in ele)
+        if not res:
+            return False
+
+    return True
 
 
 def search_student(students):
@@ -198,7 +206,7 @@ def search_student(students):
             result = [x for x in students if std_id.lower() in x[0].lower()]
             break
 
-        if option == "2":
+        elif option == "2":
             name = input("Input the characters: ")
             result = [x for x in students if name.lower() in x[1].lower()]
             break
@@ -281,6 +289,13 @@ def main():
             while len(result) != 1 and keep_searching:
                 result = search_student(students)
                 student_display(result)
+                if check_identical_student(result):
+                    try:
+                        ip = int(input("Please search by No.: "))
+                    except ValueError:
+                        print("Please enter a number.")
+                        continue
+                    result = result[ip - 1: ip]
                 if len(result) != 1:
                     while True:
                         confirm = input("Keep searching (y/n)? ")
